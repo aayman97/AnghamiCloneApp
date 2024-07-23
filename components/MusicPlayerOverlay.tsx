@@ -1,5 +1,13 @@
-import React, {useEffect} from 'react';
-import {View, StyleSheet, ActivityIndicator, Dimensions} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Platform,
+  LayoutRectangle,
+} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   clamp,
@@ -12,9 +20,20 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {tabBarHeight} from '../constants/constant';
-import {setMusicPlayerHeightAnimation} from '../store/actions/appActions';
-import {useDispatch} from 'react-redux';
+import {
+  musicList,
+  musicPlayerShrinkedColor,
+  tabBarHeight,
+} from '../constants/constant';
+import {getColors} from 'react-native-image-colors';
+import LinearGradient from 'react-native-linear-gradient';
+import {lightenHexColor} from '../helpers/ligherHexColor';
+import {
+  AndroidImageColors,
+  ImageColorsResult,
+  IOSImageColors,
+  WebImageColors,
+} from 'react-native-image-colors/build/types';
 
 interface OverlayProps {
   visible: boolean;
@@ -23,13 +42,31 @@ interface OverlayProps {
 
 const {width, height} = Dimensions.get('screen');
 
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+
 const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   visible,
   translationY,
 }) => {
-  // const translationY = useSharedValue(0);
+  const [currentMusicIndex, setCurrentMusicIndex] = useState<number>(0);
+  const [colors, setColors] = useState<Exclude<
+    ImageColorsResult,
+    WebImageColors
+  > | null>(null);
+  const [albumCoverContianerLayout, setAlbumCoverContainerLayout] =
+    useState<LayoutRectangle>({
+      height: 0,
+      width: 0,
+      x: 0,
+      y: 0,
+    });
+
   const prevTranslationY = useSharedValue(0);
   const inputValue = [0, height - 4 * tabBarHeight];
+  const inputValueForShrinkedMusicPlayer = [
+    height - 4 * tabBarHeight,
+    (height - 4 * tabBarHeight) / 1.5,
+  ];
 
   function clamp(val: number, min: number, max: number) {
     return Math.min(Math.max(val, min), max);
@@ -37,7 +74,6 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
 
   const pan = Gesture.Pan()
     .onStart(e => {
-      console.log(translationY.value);
       prevTranslationY.value = translationY.value;
     })
     .onUpdate(event => {
@@ -81,7 +117,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     .runOnJS(true);
 
   const animatedStyles = useAnimatedStyle(() => ({
-    height: interpolate(translationY.value, inputValue, [height, 70], {
+    height: interpolate(translationY.value, inputValue, [height, 69], {
       extrapolateLeft: Extrapolation.CLAMP,
       extrapolateRight: Extrapolation.CLAMP,
     }),
@@ -102,6 +138,68 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     ],
   }));
 
+  const animatedStylesForShrinkedMusicPlayer = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        translationY.value,
+        inputValueForShrinkedMusicPlayer,
+        [1, 0],
+        {
+          extrapolateLeft: Extrapolation.CLAMP,
+          extrapolateRight: Extrapolation.CLAMP,
+        },
+      ),
+    };
+  });
+
+  const animatedStyleForAlbumCover = useAnimatedStyle(() => {
+    return {
+      height: interpolate(translationY.value, inputValue, [80, 70], {
+        extrapolateLeft: Extrapolation.CLAMP,
+        extrapolateRight: Extrapolation.CLAMP,
+      }),
+      width: interpolate(translationY.value, inputValue, [80, 70], {
+        extrapolateLeft: Extrapolation.CLAMP,
+        extrapolateRight: Extrapolation.CLAMP,
+      }),
+      transform: [
+        {
+          translateX: interpolate(
+            translationY.value,
+            inputValue,
+            [albumCoverContianerLayout.x, 0],
+            {
+              extrapolateLeft: Extrapolation.CLAMP,
+              extrapolateRight: Extrapolation.CLAMP,
+            },
+          ),
+        },
+        {
+          translateY: interpolate(
+            translationY.value,
+            inputValue,
+            [albumCoverContianerLayout.y + 70, 0],
+            {
+              extrapolateLeft: Extrapolation.CLAMP,
+              extrapolateRight: Extrapolation.CLAMP,
+            },
+          ),
+        },
+      ],
+    };
+  }, [albumCoverContianerLayout]);
+
+  useEffect(() => {
+    getColors(musicList[currentMusicIndex].image, {
+      fallback: '#228B22',
+      cache: true,
+      key: musicList[currentMusicIndex].image,
+      quality: 'highest',
+    }).then(res => {
+      setColors(res as Exclude<ImageColorsResult, WebImageColors>);
+    });
+  }, [currentMusicIndex]);
+
   if (!visible) return null;
 
   return (
@@ -111,9 +209,49 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
           styles.overlay,
           {
             width: '100%',
+            backgroundColor:
+              Platform.OS === 'android'
+                ? colors
+                  ? lightenHexColor(
+                      (colors as AndroidImageColors).dominant,
+                      0.7,
+                    )
+                  : 'transparent'
+                : colors
+                ? lightenHexColor((colors as IOSImageColors).primary, 0.7)
+                : 'transparent',
           },
           animatedStyles,
-        ]}></Animated.View>
+        ]}>
+        {/* Music player shrinked */}
+        <AnimatedLinearGradient
+          colors={musicPlayerShrinkedColor}
+          style={[
+            styles.musicPlayerShrinkedContainer,
+            animatedStylesForShrinkedMusicPlayer,
+          ]}></AnimatedLinearGradient>
+        {albumCoverContianerLayout.x !== 0 && (
+          <Animated.Image
+            source={{uri: musicList[currentMusicIndex].image}}
+            style={[styles.musicPlayerCoverImage, animatedStyleForAlbumCover]}
+          />
+        )}
+
+        <View style={{flex: 1, padding: 15}}>
+          {/* like and AI mix Container */}
+          <View style={styles.likeAndAImixContainer}></View>
+
+          {/* Album cover and title container */}
+          <View
+            style={styles.albumCoverAndTitleContainer}
+            onLayout={e => {
+              console.log(e.nativeEvent.layout);
+              setAlbumCoverContainerLayout(e.nativeEvent.layout);
+            }}>
+            <View style={styles.albumCoverContainer}></View>
+          </View>
+        </View>
+      </Animated.View>
     </GestureDetector>
   );
 };
@@ -123,9 +261,33 @@ const styles = StyleSheet.create({
     position: 'absolute',
     // right: 0,
     bottom: tabBarHeight,
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  musicPlayerShrinkedContainer: {
+    width: '100%',
+    height: 70,
+  },
+  musicPlayerCoverImage: {
+    resizeMode: 'contain',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    zIndex: 99,
+  },
+  likeAndAImixContainer: {
+    width: '100%',
+    height: 50,
+    backgroundColor: 'yellow',
+  },
+  albumCoverAndTitleContainer: {
+    width: '100%',
+    height: 80,
+    marginTop: 5,
+    flexDirection: 'row',
+  },
+  albumCoverContainer: {
+    height: 80,
+    width: 80,
   },
 });
 
