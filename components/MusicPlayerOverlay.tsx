@@ -34,6 +34,7 @@ import {
   IOSImageColors,
   WebImageColors,
 } from 'react-native-image-colors/build/types';
+import SongsAndLyricsComponent from './SongsAndLyricsComponent';
 
 interface OverlayProps {
   visible: boolean;
@@ -152,43 +153,6 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     };
   });
 
-  const animatedStyleForAlbumCover = useAnimatedStyle(() => {
-    return {
-      height: interpolate(translationY.value, inputValue, [80, 70], {
-        extrapolateLeft: Extrapolation.CLAMP,
-        extrapolateRight: Extrapolation.CLAMP,
-      }),
-      width: interpolate(translationY.value, inputValue, [80, 70], {
-        extrapolateLeft: Extrapolation.CLAMP,
-        extrapolateRight: Extrapolation.CLAMP,
-      }),
-      transform: [
-        {
-          translateX: interpolate(
-            translationY.value,
-            inputValue,
-            [albumCoverContianerLayout.x, 0],
-            {
-              extrapolateLeft: Extrapolation.CLAMP,
-              extrapolateRight: Extrapolation.CLAMP,
-            },
-          ),
-        },
-        {
-          translateY: interpolate(
-            translationY.value,
-            inputValue,
-            [albumCoverContianerLayout.y + 70, 0],
-            {
-              extrapolateLeft: Extrapolation.CLAMP,
-              extrapolateRight: Extrapolation.CLAMP,
-            },
-          ),
-        },
-      ],
-    };
-  }, [albumCoverContianerLayout]);
-
   useEffect(() => {
     getColors(musicList[currentMusicIndex].image, {
       fallback: '#228B22',
@@ -230,27 +194,15 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
             styles.musicPlayerShrinkedContainer,
             animatedStylesForShrinkedMusicPlayer,
           ]}></AnimatedLinearGradient>
-        {albumCoverContianerLayout.x !== 0 && (
-          <Animated.Image
-            source={{uri: musicList[currentMusicIndex].image}}
-            style={[styles.musicPlayerCoverImage, animatedStyleForAlbumCover]}
-          />
-        )}
 
-        <View style={{flex: 1, padding: 15}}>
-          {/* like and AI mix Container */}
-          <View style={styles.likeAndAImixContainer}></View>
-
-          {/* Album cover and title container */}
-          <View
-            style={styles.albumCoverAndTitleContainer}
-            onLayout={e => {
-              console.log(e.nativeEvent.layout);
-              setAlbumCoverContainerLayout(e.nativeEvent.layout);
-            }}>
-            <View style={styles.albumCoverContainer}></View>
-          </View>
-        </View>
+        <SongsAndLyricsComponent
+          albumCoverContianerLayout={albumCoverContianerLayout}
+          setAlbumCoverContainerLayout={setAlbumCoverContainerLayout}
+          currentMusicIndex={currentMusicIndex}
+          setCurrentMusicIndex={setCurrentMusicIndex}
+          inputValue={inputValue}
+          translationY={translationY}
+        />
       </Animated.View>
     </GestureDetector>
   );
