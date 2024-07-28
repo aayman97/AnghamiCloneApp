@@ -72,7 +72,7 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   tabBarContainer: {
     width: '100%',
-    height: 60,
+    height: tabBarHeight,
     backgroundColor: 'blue',
   },
 });

@@ -35,6 +35,7 @@ import {
   WebImageColors,
 } from 'react-native-image-colors/build/types';
 import SongsAndLyricsComponent from './SongsAndLyricsComponent';
+import TrackPlayer from 'react-native-track-player';
 
 interface OverlayProps {
   visible: boolean;
@@ -45,10 +46,14 @@ const {width, height} = Dimensions.get('screen');
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
+
+
 const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   visible,
   translationY,
 }) => {
+
+
   const [currentMusicIndex, setCurrentMusicIndex] = useState<number>(0);
   const [colors, setColors] = useState<Exclude<
     ImageColorsResult,
@@ -69,10 +74,19 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     (height - 4 * tabBarHeight) / 1.5,
   ];
 
+
+  const extrapolationObject =  {
+    extrapolateLeft: Extrapolation.CLAMP,
+    extrapolateRight: Extrapolation.CLAMP,
+  }
+
   function clamp(val: number, min: number, max: number) {
     return Math.min(Math.max(val, min), max);
   }
 
+
+
+  
   const pan = Gesture.Pan()
     .onStart(e => {
       prevTranslationY.value = translationY.value;
@@ -118,10 +132,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     .runOnJS(true);
 
   const animatedStyles = useAnimatedStyle(() => ({
-    height: interpolate(translationY.value, inputValue, [height, 69], {
-      extrapolateLeft: Extrapolation.CLAMP,
-      extrapolateRight: Extrapolation.CLAMP,
-    }),
+    height: interpolate(translationY.value, inputValue, [height, 69], extrapolationObject),
     borderTopRightRadius: interpolate(translationY.value, inputValue, [20, 0]),
     borderTopLeftRadius: interpolate(translationY.value, inputValue, [20, 0]),
     transform: [
@@ -130,10 +141,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
           translationY.value,
           inputValue,
           [tabBarHeight, 0],
-          {
-            extrapolateLeft: Extrapolation.CLAMP,
-            extrapolateRight: Extrapolation.CLAMP,
-          },
+         extrapolationObject
         ),
       },
     ],
@@ -145,13 +153,20 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
         translationY.value,
         inputValueForShrinkedMusicPlayer,
         [1, 0],
-        {
-          extrapolateLeft: Extrapolation.CLAMP,
-          extrapolateRight: Extrapolation.CLAMP,
-        },
+       extrapolationObject
       ),
     };
   });
+
+  const animatedStyleForMusicPlayerSlider = useAnimatedStyle(() =>{
+    return {
+      transform : [{
+        translateY : interpolate(translationY.value,inputValue,[0,height*0.5],extrapolationObject)
+      }]
+    }
+  })
+
+  
 
   useEffect(() => {
     getColors(musicList[currentMusicIndex].image, {
@@ -162,7 +177,14 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     }).then(res => {
       setColors(res as Exclude<ImageColorsResult, WebImageColors>);
     });
+
+    
+   
   }, [currentMusicIndex]);
+
+
+
+
 
   if (!visible) return null;
 
@@ -180,10 +202,10 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
                       (colors as AndroidImageColors).dominant,
                       0.7,
                     )
-                  : 'transparent'
+                  : lightenHexColor("#0000FF",0.7)
                 : colors
                 ? lightenHexColor((colors as IOSImageColors).primary, 0.7)
-                : 'transparent',
+                : lightenHexColor("#0000FF",0.7),
           },
           animatedStyles,
         ]}>
@@ -203,6 +225,11 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
           inputValue={inputValue}
           translationY={translationY}
         />
+
+        {/* Music player slider and play and pause button */}
+        <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
+
+        </Animated.View>
       </Animated.View>
     </GestureDetector>
   );
@@ -241,6 +268,12 @@ const styles = StyleSheet.create({
     height: 80,
     width: 80,
   },
+  sliderAndPlayContainer :{
+    width : "100%",
+    height : height * 0.3,
+    backgroundColor : 'red',
+    bottom : 0
+  }
 });
 
 export default MusicPlayerOverlay;

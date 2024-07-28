@@ -37,7 +37,7 @@ const MyAnimatedTabBar: React.FC<props> = ({tabBarProps, translationY}) => {
 const styles = StyleSheet.create({
   tabBarContainer: {
     width: '100%',
-    height: 60,
+    height: tabBarHeight,
     backgroundColor: 'blue',
     position: 'absolute',
     bottom: 0,
