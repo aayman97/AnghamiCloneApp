@@ -7,6 +7,7 @@ import {
   Image,
   Platform,
   LayoutRectangle,
+  Text,
 } from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -35,7 +36,9 @@ import {
   WebImageColors,
 } from 'react-native-image-colors/build/types';
 import SongsAndLyricsComponent from './SongsAndLyricsComponent';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { State } from 'react-native-track-player';
+import Sound from 'react-native-sound';
+import { getPlaybackState } from 'react-native-track-player/lib/src/trackPlayer';
 
 interface OverlayProps {
   visible: boolean;
@@ -46,7 +49,7 @@ const {width, height} = Dimensions.get('screen');
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
-
+Sound.setCategory('Playback');
 
 const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   visible,
@@ -66,6 +69,8 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       x: 0,
       y: 0,
     });
+  const [currentSong,setCurrentSong] = useState<Sound | null>(null)
+   const [loading,setLoading] = useState<boolean>(false)
 
   const prevTranslationY = useSharedValue(0);
   const inputValue = [0, height - 4 * tabBarHeight];
@@ -74,6 +79,9 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     (height - 4 * tabBarHeight) / 1.5,
   ];
 
+
+
+  
 
   const extrapolationObject =  {
     extrapolateLeft: Extrapolation.CLAMP,
@@ -178,9 +186,38 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       setColors(res as Exclude<ImageColorsResult, WebImageColors>);
     });
 
-    
-   
+    const temp = new Sound(musicList[currentMusicIndex].song,error => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+
+      setCurrentSong(temp)
+      // if loaded successfully
+      console.log(
+        'duration in seconds: ' +
+        temp.getDuration() +
+          ' number of channels: ' +
+          temp.getNumberOfChannels(),
+      );
+    });
+ 
+  
+
   }, [currentMusicIndex]);
+
+
+useEffect(()=>{    
+    currentSong?.play(success => {
+      if (success) {
+        console.log('successfully finished playing');
+      } else {
+        console.log('playback failed due to audio decoding errors');
+      }
+    })
+  
+},[currentSong])
+
 
 
 
@@ -228,7 +265,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
 
         {/* Music player slider and play and pause button */}
         <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
-
+            {currentSong === null && !currentSong?.isPlaying() && <ActivityIndicator size={'large'} color={'black'}/>}
         </Animated.View>
       </Animated.View>
     </GestureDetector>

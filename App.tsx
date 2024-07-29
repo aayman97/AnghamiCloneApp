@@ -27,12 +27,17 @@ import {Provider} from 'react-redux';
 import configureStore from './store/configureStore';
 import {SharedValue, useSharedValue} from 'react-native-reanimated';
 import MyAnimatedTabBar from './components/MyAnimatedTabBar';
+import TrackPlayer from 'react-native-track-player';
 
 const Tab = createBottomTabNavigator();
 
 type myTabsProp = {
   translationY: SharedValue<number>;
 };
+
+
+
+
 
 const MyTabs: React.FC<myTabsProp> = ({translationY}) => {
   return (
