@@ -204,7 +204,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       }]).then(res =>{
         TrackPlayer.play();
         setPlayerState(PlayerState.Playing)
-        setRepeatMode(RepeatMode.Off)
+        TrackPlayer.setRepeatMode(RepeatMode.Off)
       })
     });
 
