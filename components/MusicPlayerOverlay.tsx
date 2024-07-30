@@ -36,9 +36,9 @@ import {
   WebImageColors,
 } from 'react-native-image-colors/build/types';
 import SongsAndLyricsComponent from './SongsAndLyricsComponent';
-import TrackPlayer, { State, useProgress } from 'react-native-track-player';
+import TrackPlayer, { Capability, RepeatMode, State, useProgress } from 'react-native-track-player';
 import Sound from 'react-native-sound';
-import { getPlaybackState } from 'react-native-track-player/lib/src/trackPlayer';
+import { getPlaybackState, setRepeatMode } from 'react-native-track-player/lib/src/trackPlayer';
 
 interface OverlayProps {
   visible: boolean;
@@ -182,6 +182,12 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   
   const progress = useProgress();
 
+  TrackPlayer.updateOptions({
+    capabilities: [
+    Capability.Play,
+    Capability.Pause,
+    ]})
+
   useEffect(() => {
     getColors(musicList[currentMusicIndex].image, {
       fallback: '#228B22',
@@ -191,10 +197,14 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     }).then(res => {
       setColors(res as Exclude<ImageColorsResult, WebImageColors>);
       TrackPlayer.add([{
-        url : musicList[currentMusicIndex].song
+        url : musicList[currentMusicIndex].song,
+        artwork : musicList[currentMusicIndex].image,
+        title : "Sound of Silence",
+        artist : 'Disturbed'
       }]).then(res =>{
         TrackPlayer.play();
         setPlayerState(PlayerState.Playing)
+        setRepeatMode(RepeatMode.Off)
       })
     });
 
