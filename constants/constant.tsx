@@ -6,7 +6,7 @@ export const musicList = [
   {
     image:
       'https://cdn.shoplightspeed.com/shops/635515/files/55496880/1024x1024x2/disturbed-immortalized-2lpexplicit.jpg',
-    song : require('../assets/sounds/Disturbed_The_Sound_Of_Silence.mp3')
+    song : require('../assets/sounds/disturbed_The_Sound_Of_Silence.mp3')
   },
 ];
 

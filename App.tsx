@@ -36,7 +36,7 @@ type myTabsProp = {
 };
 
 
-
+TrackPlayer.setupPlayer()
 
 
 const MyTabs: React.FC<myTabsProp> = ({translationY}) => {

@@ -31,11 +31,11 @@ const SongsAndLyricsComponent: React.FC<props> = ({
 }) => {
   const animatedStyleForAlbumCover = useAnimatedStyle(() => {
     return {
-      height: interpolate(translationY.value, inputValue, [80, 70], {
+      height: interpolate(translationY.value, inputValue, [78, 68], {
         extrapolateLeft: Extrapolation.CLAMP,
         extrapolateRight: Extrapolation.CLAMP,
       }),
-      width: interpolate(translationY.value, inputValue, [80, 70], {
+      width: interpolate(translationY.value, inputValue, [80, 68], {
         extrapolateLeft: Extrapolation.CLAMP,
         extrapolateRight: Extrapolation.CLAMP,
       }),
@@ -55,7 +55,7 @@ const SongsAndLyricsComponent: React.FC<props> = ({
           translateY: interpolate(
             translationY.value,
             inputValue,
-            [albumCoverContianerLayout.y + 70, 0],
+            [albumCoverContianerLayout.y + 70, 2],
             {
               extrapolateLeft: Extrapolation.CLAMP,
               extrapolateRight: Extrapolation.CLAMP,
@@ -83,7 +83,7 @@ const SongsAndLyricsComponent: React.FC<props> = ({
         <View
           style={styles.albumCoverAndTitleContainer}
           onLayout={e => {
-            console.log(e.nativeEvent.layout);
+            // console.log(e.nativeEvent.layout);
             setAlbumCoverContainerLayout(e.nativeEvent.layout);
           }}>
           <View style={styles.albumCoverContainer}></View>

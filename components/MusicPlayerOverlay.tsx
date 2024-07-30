@@ -36,7 +36,7 @@ import {
   WebImageColors,
 } from 'react-native-image-colors/build/types';
 import SongsAndLyricsComponent from './SongsAndLyricsComponent';
-import TrackPlayer, { State } from 'react-native-track-player';
+import TrackPlayer, { State, useProgress } from 'react-native-track-player';
 import Sound from 'react-native-sound';
 import { getPlaybackState } from 'react-native-track-player/lib/src/trackPlayer';
 
@@ -45,11 +45,15 @@ interface OverlayProps {
   translationY: SharedValue<number>;
 }
 
+enum PlayerState {
+  Playing = "Playing",
+  Stopped = "Stopped"
+}
+
 const {width, height} = Dimensions.get('screen');
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
-Sound.setCategory('Playback');
 
 const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   visible,
@@ -69,7 +73,8 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       x: 0,
       y: 0,
     });
-  const [currentSong,setCurrentSong] = useState<Sound | null>(null)
+
+   const [playerState,setPlayerState] = useState<PlayerState>()
    const [loading,setLoading] = useState<boolean>(false)
 
   const prevTranslationY = useSharedValue(0);
@@ -175,6 +180,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   })
 
   
+  const progress = useProgress();
 
   useEffect(() => {
     getColors(musicList[currentMusicIndex].image, {
@@ -184,40 +190,28 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       quality: 'highest',
     }).then(res => {
       setColors(res as Exclude<ImageColorsResult, WebImageColors>);
+      TrackPlayer.add([{
+        url : musicList[currentMusicIndex].song
+      }]).then(res =>{
+        TrackPlayer.play();
+        setPlayerState(PlayerState.Playing)
+      })
     });
-
-    const temp = new Sound(musicList[currentMusicIndex].song,error => {
-      if (error) {
-        console.log('failed to load the sound', error);
-        return;
-      }
-
-      setCurrentSong(temp)
-      // if loaded successfully
-      console.log(
-        'duration in seconds: ' +
-        temp.getDuration() +
-          ' number of channels: ' +
-          temp.getNumberOfChannels(),
-      );
-    });
- 
-  
 
   }, [currentMusicIndex]);
 
 
-useEffect(()=>{    
-    currentSong?.play(success => {
-      if (success) {
-        console.log('successfully finished playing');
-      } else {
-        console.log('playback failed due to audio decoding errors');
-      }
-    })
-  
-},[currentSong])
 
+
+
+
+  const animatedStyleForProgressBarShrinked = useAnimatedStyle(() =>{
+
+      return{
+        width : interpolate(progress.position,[0,progress.duration],[0,width]),
+        opacity : interpolate(translationY.value,inputValue,[0,1])
+      }
+  },[progress.position])
 
 
 
@@ -252,7 +246,10 @@ useEffect(()=>{
           style={[
             styles.musicPlayerShrinkedContainer,
             animatedStylesForShrinkedMusicPlayer,
-          ]}></AnimatedLinearGradient>
+          ]}>
+            {/* white bar for progress */}
+          
+          </AnimatedLinearGradient>
 
         <SongsAndLyricsComponent
           albumCoverContianerLayout={albumCoverContianerLayout}
@@ -263,9 +260,12 @@ useEffect(()=>{
           translationY={translationY}
         />
 
+<View style={styles.progressBarShrinked}>
+<Animated.View style={[{height : "100%",backgroundColor : 'white'},animatedStyleForProgressBarShrinked]}/>
+</View>
         {/* Music player slider and play and pause button */}
         <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
-            {currentSong === null && !currentSong?.isPlaying() && <ActivityIndicator size={'large'} color={'black'}/>}
+            {playerState !== PlayerState.Playing && <ActivityIndicator size={'large'} color={'black'}/>}
         </Animated.View>
       </Animated.View>
     </GestureDetector>
@@ -310,7 +310,8 @@ const styles = StyleSheet.create({
     height : height * 0.3,
     backgroundColor : 'red',
     bottom : 0
-  }
+  },
+  progressBarShrinked : {width :width,height : 2,backgroundColor : 'rgba(255,255,255,0.2)',position : 'absolute',zIndex : 100,top : 0}
 });
 
 export default MusicPlayerOverlay;

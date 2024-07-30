@@ -14,7 +14,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		45E5B404CD5F9F787BAF56B5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF5963EFD74BAAEE69B2058 /* ExpoModulesProvider.swift */; };
-		4BD89D402C57DD07000CFBF7 /* Disturbed_The_Sound_Of_Silence.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BD89D3F2C57DD07000CFBF7 /* Disturbed_The_Sound_Of_Silence.mp3 */; };
+		4BD62EFB2C58FAA00058C748 /* disturbed_The_Sound_Of_Silence.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BD62EFA2C58FAA00058C748 /* disturbed_The_Sound_Of_Silence.mp3 */; };
 		7699B88040F8A987B510C191 /* libPods-AnghamiCloneApp-AnghamiCloneAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-AnghamiCloneApp-AnghamiCloneAppTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		BB6948E9F003827B71300EA8 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E7EF5F68610B38D780373F /* ExpoModulesProvider.swift */; };
@@ -45,7 +45,7 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = AnghamiCloneApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		19F6CBCC0A4E27FBF8BF4A61 /* libPods-AnghamiCloneApp-AnghamiCloneAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AnghamiCloneApp-AnghamiCloneAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4392A12AC88292D35C810B /* Pods-AnghamiCloneApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AnghamiCloneApp.debug.xcconfig"; path = "Target Support Files/Pods-AnghamiCloneApp/Pods-AnghamiCloneApp.debug.xcconfig"; sourceTree = "<group>"; };
-		4BD89D3F2C57DD07000CFBF7 /* Disturbed_The_Sound_Of_Silence.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Disturbed_The_Sound_Of_Silence.mp3; path = ../assets/sounds/Disturbed_The_Sound_Of_Silence.mp3; sourceTree = "<group>"; };
+		4BD62EFA2C58FAA00058C748 /* disturbed_The_Sound_Of_Silence.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = disturbed_The_Sound_Of_Silence.mp3; path = ../assets/sounds/disturbed_The_Sound_Of_Silence.mp3; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-AnghamiCloneApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AnghamiCloneApp.release.xcconfig"; path = "Target Support Files/Pods-AnghamiCloneApp/Pods-AnghamiCloneApp.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-AnghamiCloneApp-AnghamiCloneAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AnghamiCloneApp-AnghamiCloneAppTests.debug.xcconfig"; path = "Target Support Files/Pods-AnghamiCloneApp-AnghamiCloneAppTests/Pods-AnghamiCloneApp-AnghamiCloneAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-AnghamiCloneApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AnghamiCloneApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -143,7 +143,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				4BD89D3F2C57DD07000CFBF7 /* Disturbed_The_Sound_Of_Silence.mp3 */,
+				4BD62EFA2C58FAA00058C748 /* disturbed_The_Sound_Of_Silence.mp3 */,
 				13B07FAE1A68108700A75B9A /* AnghamiCloneApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* AnghamiCloneAppTests */,
@@ -281,7 +281,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4BD89D402C57DD07000CFBF7 /* Disturbed_The_Sound_Of_Silence.mp3 in Resources */,
+				4BD62EFB2C58FAA00058C748 /* disturbed_The_Sound_Of_Silence.mp3 in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				119745CCFC7BE17922219556 /* PrivacyInfo.xcprivacy in Resources */,
@@ -672,7 +672,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -744,7 +747,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
