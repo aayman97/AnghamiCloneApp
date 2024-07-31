@@ -8,6 +8,7 @@ import {
   Platform,
   LayoutRectangle,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -257,8 +258,15 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
             styles.musicPlayerShrinkedContainer,
             animatedStylesForShrinkedMusicPlayer,
           ]}>
-            {/* white bar for progress */}
-          
+            <TouchableOpacity style={{width : "100%",height : "100%"}}
+            onPress={() =>{
+              translationY.value = withTiming(0,{
+                duration : 300
+              })
+            }}
+            >
+
+            </TouchableOpacity>
           </AnimatedLinearGradient>
 
         <SongsAndLyricsComponent
@@ -270,9 +278,12 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
           translationY={translationY}
         />
 
-<View style={styles.progressBarShrinked}>
-<Animated.View style={[{height : "100%",backgroundColor : 'white'},animatedStyleForProgressBarShrinked]}/>
-</View>
+
+  
+    {/* white bar for progress */}
+          <View style={styles.progressBarShrinked}>
+            <Animated.View style={[{height : "100%",backgroundColor : 'white'},animatedStyleForProgressBarShrinked]}/>
+          </View>
         {/* Music player slider and play and pause button */}
         <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
             {playerState !== PlayerState.Playing && <ActivityIndicator size={'large'} color={'black'}/>}

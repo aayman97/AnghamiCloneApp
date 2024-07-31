@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Dimensions,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -36,6 +37,8 @@ type myTabsProp = {
 };
 
 
+const {width,height} = Dimensions.get('screen')
+ 
 TrackPlayer.setupPlayer()
 
 
@@ -59,7 +62,7 @@ const MyTabs: React.FC<myTabsProp> = ({translationY}) => {
 };
 
 function App(): React.JSX.Element {
-  const translationY = useSharedValue(0);
+  const translationY = useSharedValue(height - 4 * tabBarHeight);
 
   return (
     <Provider store={configureStore()}>
