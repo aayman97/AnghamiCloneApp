@@ -20,6 +20,7 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {
@@ -38,8 +39,9 @@ import {
 } from 'react-native-image-colors/build/types';
 import SongsAndLyricsComponent from './SongsAndLyricsComponent';
 import TrackPlayer, { Capability, RepeatMode, State, useProgress } from 'react-native-track-player';
-import Sound from 'react-native-sound';
-import { getPlaybackState, setRepeatMode } from 'react-native-track-player/lib/src/trackPlayer';
+import { formatTime } from '../helpers/formatTime';
+import PlayButton from './PlayButton';
+
 
 interface OverlayProps {
   visible: boolean;
@@ -54,6 +56,8 @@ enum PlayerState {
 const {width, height} = Dimensions.get('screen');
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+
+
 
 
 const MusicPlayerOverlay: React.FC<OverlayProps> = ({
@@ -84,6 +88,10 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     height - 4 * tabBarHeight,
     (height - 4 * tabBarHeight) / 1.5,
   ];
+
+  const indicatorBallSharedValue=useSharedValue(0)
+  const prevIndicatorBallSharedValue=useSharedValue(0)
+  const scaleIndicatorBallSharedValue =useSharedValue(1)
 
 
 
@@ -145,6 +153,35 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     })
     .runOnJS(true);
 
+
+
+    const LoadingBarPan = Gesture.Pan()
+    .onStart(() =>{
+      prevIndicatorBallSharedValue.value = indicatorBallSharedValue.value
+      scaleIndicatorBallSharedValue.value= withSpring(1.5,{
+        duration : 100
+      })
+    })
+    .onUpdate(event => {
+      indicatorBallSharedValue.value = clamp(prevIndicatorBallSharedValue.value+event.translationX,0,width)
+
+      
+      TrackPlayer.pause().then((res) =>{
+        TrackPlayer.seekTo(((indicatorBallSharedValue.value + 7.5)/width)* progress.duration).then(() => {
+        })
+      })
+    }).onEnd(() =>{
+      prevIndicatorBallSharedValue.value = indicatorBallSharedValue.value
+
+
+      TrackPlayer.play().then(() =>{
+        scaleIndicatorBallSharedValue.value= withSpring(1,{
+          duration : 100
+        })
+      })
+      
+    }) .runOnJS(true)
+
   const animatedStyles = useAnimatedStyle(() => ({
     height: interpolate(translationY.value, inputValue, [height, 69], extrapolationObject),
     borderTopRightRadius: interpolate(translationY.value, inputValue, [20, 0]),
@@ -179,6 +216,8 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       }]
     }
   })
+
+
 
   
   const progress = useProgress();
@@ -217,7 +256,6 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
 
 
   const animatedStyleForProgressBarShrinked = useAnimatedStyle(() =>{
-
       return{
         width : interpolate(progress.position,[0,progress.duration],[0,width]),
         opacity : interpolate(translationY.value,inputValue,[0,1])
@@ -225,9 +263,30 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   },[progress.position])
 
 
+  const animatedStyleForLoadingBar = useAnimatedStyle(() =>{
+
+    return{
+      width : interpolate(progress.position,[0,progress.duration],[0,width]),
+    }
+},[progress.position])
+
+const animatedStyleForBallIndicator = useAnimatedStyle(() =>{
+  return{
+    transform : [{
+      translateX : indicatorBallSharedValue.value
+    },{
+      scale : scaleIndicatorBallSharedValue.value
+    }]
+  }
+},[])
 
 
-
+useEffect(() =>{
+  console.log(progress.duration)
+  indicatorBallSharedValue.value = withTiming((width * (progress.position/progress.duration))-7.5,{
+    duration : 100
+  })
+},[progress.position])
   if (!visible) return null;
 
   return (
@@ -287,6 +346,38 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
         {/* Music player slider and play and pause button */}
         <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
             {playerState !== PlayerState.Playing && <ActivityIndicator size={'large'} color={'black'}/>}
+
+            {/* Loading Bar and slider*/}
+         
+            <View style={styles.loadingContainer}>
+              <Animated.View  style={[{height : "100%",backgroundColor : 'white'},animatedStyleForLoadingBar]} />
+             
+                <GestureDetector gesture={LoadingBarPan}>
+                <Animated.View style={[styles.ballIndicator,animatedStyleForBallIndicator]}>
+                  <View style={styles.viewForPressingOnBall}/>
+                  </Animated.View>
+                </GestureDetector>
+              </View>
+
+              {/* time indicator */}
+
+              <View style={styles.timeIndicatorContainer}>
+                {/* start time */}
+                <Text style={styles.timeTextStyle}>
+                {formatTime(progress.position)}
+                </Text>
+
+                <Text style={styles.timeTextStyle}>
+                -{formatTime(progress.duration - progress.position)}
+                </Text>
+              </View>
+
+               {/*Play button*/}
+               <View style={styles.playButtonContainer}>
+                  <PlayButton/>
+                </View>
+           
+          
         </Animated.View>
       </Animated.View>
     </GestureDetector>
@@ -328,11 +419,48 @@ const styles = StyleSheet.create({
   },
   sliderAndPlayContainer :{
     width : "100%",
-    height : height * 0.3,
-    backgroundColor : 'red',
-    bottom : 0
+    height : height * 0.27,
+    backgroundColor : 'rgba(0,0,0,0.3)',
+    bottom : 0,
+    // paddingHorizontal : 10,
+    alignItems : 'center'
   },
-  progressBarShrinked : {width :width,height : 2,backgroundColor : 'rgba(255,255,255,0.2)',position : 'absolute',zIndex : 100,top : 0}
+  progressBarShrinked : {width :width,height : 2,backgroundColor : 'rgba(255,255,255,0.2)',position : 'absolute',zIndex : 100,top : 0},
+  loadingContainer : {
+    width :width,height : 5,backgroundColor : 'rgba(255,255,255,0.2)'
+  },
+  ballIndicator : {
+    height : 15,
+    width : 15,
+    backgroundColor : 'white',
+    position : 'absolute',
+    // right : -15,
+    bottom : -5,
+    borderRadius : 15,
+    alignItems : 'center',
+    justifyContent : 'center'
+  },
+  viewForPressingOnBall : {
+    width : 30,
+    height : 30,
+    // backgroundColor : 'red'
+  },
+  timeIndicatorContainer : {width : "100%",height : 40,marginTop : 5,zIndex: -1,alignItems : 'center', flexDirection : 'row',paddingHorizontal : 10,  justifyContent : 'space-between'},
+  timeTextStyle : {
+    color : 'white',
+    fontSize : 15,
+    fontWeight : 'bold',
+  
+  },
+  playButtonContainer:{
+  backgroundColor : 'red',
+    // height : 200,
+    width : width,
+    flex : 1,
+    flexDirection : 'row',
+    alignItems : 'center',
+    justifyContent : 'center'
+  }
 });
 
 export default MusicPlayerOverlay;
