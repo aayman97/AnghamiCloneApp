@@ -1,5 +1,6 @@
 import React from 'react';
-import {Dimensions, LayoutRectangle, StyleSheet, View} from 'react-native';
+import {Dimensions, LayoutRectangle, StyleSheet, Text, TouchableOpacity, View,  FlatList
+} from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -7,6 +8,8 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import {musicList} from '../constants/constant';
+import LyricsCard from './LyricsCard';
+
 
 const {width, height} = Dimensions.get('screen');
 
@@ -19,6 +22,7 @@ type props = {
   inputValue: number[];
   currentMusicIndex: number;
   setCurrentMusicIndex: React.Dispatch<React.SetStateAction<number>>;
+  progressPosition : number
 };
 
 const SongsAndLyricsComponent: React.FC<props> = ({
@@ -28,7 +32,9 @@ const SongsAndLyricsComponent: React.FC<props> = ({
   inputValue,
   currentMusicIndex,
   setCurrentMusicIndex,
+  progressPosition
 }) => {
+  
   const animatedStyleForAlbumCover = useAnimatedStyle(() => {
     return {
       height: interpolate(translationY.value, inputValue, [78, 68], {
@@ -66,6 +72,8 @@ const SongsAndLyricsComponent: React.FC<props> = ({
     };
   }, [albumCoverContianerLayout]);
 
+  
+
   return (
     <>
       {albumCoverContianerLayout.x !== 0 && (
@@ -88,6 +96,29 @@ const SongsAndLyricsComponent: React.FC<props> = ({
           }}>
           <View style={styles.albumCoverContainer}></View>
         </View>
+
+
+           
+
+            <View style={{
+            flex : 1
+              // backgroundColor : 'blue'
+            }}>
+                 <FlatList
+                    data={musicList[currentMusicIndex].lyrics}
+                    keyExtractor={(item,index) => item.timestamp.toString()}
+                    // estimatedItemSize={200}
+                    
+                    renderItem={({item,index}) =>{
+
+                 
+                      return(
+                       
+                        <LyricsCard item={item} position={progressPosition} index={index} lyrics={musicList[currentMusicIndex].lyrics}/>
+                      )
+                    }}
+                    />
+            </View>
       </View>
     </>
   );
@@ -116,6 +147,14 @@ const styles = StyleSheet.create({
     height: 80,
     width: 80,
   },
+  verseContainer : {
+    marginTop : 20
+  },
+  verseStyle : {
+    // color :  "white",
+    fontWeight : 'bold',
+    fontSize : 30
+  }
 });
 
-export default SongsAndLyricsComponent;
+export default React.memo(SongsAndLyricsComponent);

@@ -10,7 +10,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {FlatList, Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   clamp,
   Extrapolation,
@@ -50,7 +50,8 @@ interface OverlayProps {
 
 enum PlayerState {
   Playing = "Playing",
-  Stopped = "Stopped"
+  Stopped = "Stopped",
+ 
 }
 
 const {width, height} = Dimensions.get('screen');
@@ -65,6 +66,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
   translationY,
 }) => {
 
+  
 
   const [currentMusicIndex, setCurrentMusicIndex] = useState<number>(0);
   const [colors, setColors] = useState<Exclude<
@@ -79,8 +81,8 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
       y: 0,
     });
 
-   const [playerState,setPlayerState] = useState<PlayerState>()
-   const [loading,setLoading] = useState<boolean>(false)
+   const [playerState,setPlayerState] = useState<PlayerState | undefined>()
+  //  const [loading,setLoading] = useState<boolean>(false)
 
   const prevTranslationY = useSharedValue(0);
   const inputValue = [0, height - 4 * tabBarHeight];
@@ -157,6 +159,7 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
 
     const LoadingBarPan = Gesture.Pan()
     .onStart(() =>{
+      runOnJS(setPlayerState)(PlayerState.Stopped)
       prevIndicatorBallSharedValue.value = indicatorBallSharedValue.value
       scaleIndicatorBallSharedValue.value= withSpring(1.5,{
         duration : 100
@@ -165,20 +168,25 @@ const MusicPlayerOverlay: React.FC<OverlayProps> = ({
     .onUpdate(event => {
       indicatorBallSharedValue.value = clamp(prevIndicatorBallSharedValue.value+event.translationX,0,width)
 
-      
-      TrackPlayer.pause().then((res) =>{
-        TrackPlayer.seekTo(((indicatorBallSharedValue.value + 7.5)/width)* progress.duration).then(() => {
-        })
-      })
+      TrackPlayer.pause()
     }).onEnd(() =>{
       prevIndicatorBallSharedValue.value = indicatorBallSharedValue.value
+      TrackPlayer.seekTo(((indicatorBallSharedValue.value + 7.5)/width)* progress.duration).then(() => {
 
 
-      TrackPlayer.play().then(() =>{
         scaleIndicatorBallSharedValue.value= withSpring(1,{
           duration : 100
+        },(finished) =>{
+          if(finished){
+            runOnJS(setPlayerState)(PlayerState.Playing)
+
+            runOnJS(TrackPlayer.play)()
+          }
         })
+       
       })
+
+     
       
     }) .runOnJS(true)
 
@@ -282,11 +290,23 @@ const animatedStyleForBallIndicator = useAnimatedStyle(() =>{
 
 
 useEffect(() =>{
-  console.log(progress.duration)
+  
   indicatorBallSharedValue.value = withTiming((width * (progress.position/progress.duration))-7.5,{
     duration : 100
   })
 },[progress.position])
+
+
+
+useEffect(() =>{
+  if(playerState === PlayerState.Playing){
+    TrackPlayer.play()
+  }else{
+    TrackPlayer.pause()
+  }
+},[playerState])
+
+
   if (!visible) return null;
 
   return (
@@ -335,6 +355,7 @@ useEffect(() =>{
           setCurrentMusicIndex={setCurrentMusicIndex}
           inputValue={inputValue}
           translationY={translationY}
+          progressPosition={progress.position}
         />
 
 
@@ -343,9 +364,11 @@ useEffect(() =>{
           <View style={styles.progressBarShrinked}>
             <Animated.View style={[{height : "100%",backgroundColor : 'white'},animatedStyleForProgressBarShrinked]}/>
           </View>
+
+          
         {/* Music player slider and play and pause button */}
         <Animated.View style={[styles.sliderAndPlayContainer,animatedStyleForMusicPlayerSlider]}>
-            {playerState !== PlayerState.Playing && <ActivityIndicator size={'large'} color={'black'}/>}
+
 
             {/* Loading Bar and slider*/}
          
@@ -374,7 +397,7 @@ useEffect(() =>{
 
                {/*Play button*/}
                <View style={styles.playButtonContainer}>
-                  <PlayButton/>
+                  <PlayButton playerState={playerState} setPlayerState={setPlayerState}/>
                 </View>
            
           
@@ -419,7 +442,7 @@ const styles = StyleSheet.create({
   },
   sliderAndPlayContainer :{
     width : "100%",
-    height : height * 0.27,
+    height : height * 0.25,
     backgroundColor : 'rgba(0,0,0,0.3)',
     bottom : 0,
     // paddingHorizontal : 10,
@@ -453,12 +476,12 @@ const styles = StyleSheet.create({
   
   },
   playButtonContainer:{
-  backgroundColor : 'red',
+  // backgroundColor : 'red',
     // height : 200,
     width : width,
     flex : 1,
     flexDirection : 'row',
-    alignItems : 'center',
+    // alignItems : 'center',
     justifyContent : 'center'
   }
 });

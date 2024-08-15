@@ -39,7 +39,10 @@ type myTabsProp = {
 
 const {width,height} = Dimensions.get('screen')
  
-TrackPlayer.setupPlayer()
+TrackPlayer.setupPlayer({
+  minBuffer :200,
+  autoUpdateMetadata : true
+})
 
 
 const MyTabs: React.FC<myTabsProp> = ({translationY}) => {
